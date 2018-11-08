@@ -23,16 +23,14 @@ def read_image(path, max_size=None):
     im = Image.open(path)
 
     sx, sy = im.size
-    if sx < max_size and sy < max_size:
-        return im
+    if sx > max_size or sy > max_size:
+        if sx > sy:
+            ratio = max_size / sx
+        else:
+            ratio = max_size / sy
+        im.thumbnail((int(sx * ratio), int(sy * ratio)), Image.ANTIALIAS)
 
-    if sx > sy:
-        ratio = max_size / sx
-    else:
-        ratio = max_size / sy
-    im.thumbnail((int(sx * ratio), int(sy * ratio)), Image.ANTIALIAS)
     stream = io.BytesIO()
-
     im.save(stream, 'JPEG')
     stream.seek(0)
     return stream
