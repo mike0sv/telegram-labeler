@@ -27,7 +27,7 @@ def policy(name, finisher=False):
 class LabelOnce(Policy):
     @staticmethod
     def apply(queryset):
-        return queryset.filter(label='')
+        return queryset.filter(labels=None)
 
 
 @policy('random', True)
@@ -53,6 +53,6 @@ def apply_policies(policy_list, dataset: Dataset = None):
     for p in policy_list:
         queryset = _policies[p].apply(queryset)
 
-    if not isinstance(queryset, DatasetRow):
+    if not isinstance(queryset, DatasetRow) and queryset is not None:
         return _policies[settings.DEFAULT_FINISHER_POLICY].apply(queryset)
     return queryset

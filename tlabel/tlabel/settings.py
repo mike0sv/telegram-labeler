@@ -134,6 +134,8 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+DELIMITER = ','
+
 DEFAULT_USER = env('ADMIN_USER', 'admin')
 DEFAULT_USER_PASSWORD = env('PASSWORD', 'admin')
 
@@ -155,4 +157,5 @@ TG_WEBHOOK_CERT_PEM = os.environ.get('DEALER_BOT_CERT_PEM', 'cert/cert.pem')
 TG_WEBHOOK = os.environ.get('DEALER_BOT_WEBHOOK') == 'true'
 TG_WEBHOOK_PORT = int(os.environ.get('DEALER_BOT_WEBHOOK_PORT', 5555))
 
-CLASS_DELIMITER = ','
+
+BUFFERING = env('BUFFERING', 'True', type=lambda x: x == 'True')

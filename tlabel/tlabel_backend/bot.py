@@ -7,6 +7,7 @@ import telegram.utils.request
 
 # from tlabel_backend.models import TGBot
 from tlabel import settings
+from tlabel_backend import policies
 
 
 def make_bot(tgbot: 'TGBot') -> telegram.Bot:
@@ -65,8 +66,8 @@ def get_labeler(api: 'TelegramBotApi', tg_id):
     return labeler
 
 
-def random_post() -> 'DatasetRow':
-    row = DatasetRow.objects.filter(labels=None).first()
+def get_next_row() -> 'DatasetRow':
+    row = policies.apply_policies(settings.DEFAULT_POLICIES.split(settings.DELIMITER))  # todo select dataset
     return row
 
 
@@ -79,12 +80,12 @@ def send_row(api: 'TelegramBotApi', tg_id):
         return
 
     # todo pre-buffer
-    row = random_post()  # todo choice policy
+    row = get_next_row()
     if row is None:
         api.send_text(tg_id, 'No more objects to label')
         return
 
-    message_id = api.send_message(tg_id, row.to_message(), row.get_possible_classes())  # todo more types
+    message_id = api.send_message(tg_id, row.to_message(), row.get_possible_classes())
     label = Label(labeler=labeler, row=row, message_id=message_id)
     label.save()
     print('Sending row {row} to labeler {labeler}'.format(row=row, labeler=labeler))

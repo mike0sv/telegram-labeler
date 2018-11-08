@@ -50,7 +50,7 @@ class DatasetRow(models.Model):
         clss = self.override_classes
         if not clss:
             clss = self.dataset.classes
-        return clss.split(settings.CLASS_DELIMITER)
+        return clss.split(settings.DELIMITER)
 
     def to_message(self):
         return self.dataset.generator.create_message(self)
