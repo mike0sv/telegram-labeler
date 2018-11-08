@@ -5,12 +5,37 @@ import os
 from tlabel import settings
 from tlabel_backend.models import Dataset, DatasetRow
 from tlabel_backend.sync_bot_api import BotMessage
+from PIL import Image
+
+from tlabel_backend.utils import timeit
 
 
 def read_file(path, mode='rb'):
     with open(path, mode) as f:
         payload = f.read()
         return io.BytesIO(payload) if 'b' in mode else io.StringIO(payload)
+
+
+@timeit
+def read_image(path, max_size=None):
+    if max_size is None:
+        return read_file(path)
+    im = Image.open(path)
+
+    sx, sy = im.size
+    if sx < max_size and sy < max_size:
+        return im
+
+    if sx > sy:
+        ratio = max_size / sx
+    else:
+        ratio = max_size / sy
+    im.thumbnail((int(sx * ratio), int(sy * ratio)), Image.ANTIALIAS)
+    stream = io.BytesIO()
+
+    im.save(stream, 'JPEG')
+    stream.seek(0)
+    return stream
 
 
 class Generator:
@@ -29,7 +54,6 @@ class Generator:
 
 class LocalImageGenerator(Generator):
     def _generate(self, base_path, path):
-        print(base_path, path)
         for p in glob.glob(os.path.join(path, '*')):
             if os.path.isdir(p):
                 yield from self._generate(base_path, p)
@@ -41,4 +65,4 @@ class LocalImageGenerator(Generator):
         yield from self._generate(settings.DEFAULT_DATA_DIR, self.dataset.path)
 
     def create_message(self, row: DatasetRow):
-        return BotMessage(str(row.row_id), photo=read_file(row.path, 'rb'))
+        return BotMessage(str(row.row_id), photo=read_image(row.path, 500))

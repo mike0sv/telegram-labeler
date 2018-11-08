@@ -5,6 +5,7 @@ from telegram.ext import Updater, MessageHandler, CallbackQueryHandler, Filters
 from telegram.ext.filters import MergedFilter
 
 from tlabel import settings
+from tlabel_backend.utils import timeit
 
 
 class BotMessage:
@@ -29,12 +30,14 @@ class BotMessage:
             self.media_type = 'text'
             self.media = None
 
+    @timeit
     def send(self, bot: telegram.Bot, chat_id, keyboard):
         if self.media_type == 'text':
             return bot.send_message(chat_id, text=self.text, reply_markup=keyboard)
         else:
             kwargs = {'self': bot, 'chat_id': chat_id, self.media_type: self.media,
-                      'reply_markup': keyboard, 'caption': self.text}
+                      'reply_markup': keyboard, 'caption': self.text,
+                      'timeout': 30}
             return self.METHODS[self.media_type](**kwargs)
 
 

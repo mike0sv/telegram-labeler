@@ -31,7 +31,8 @@ def env(name, default=None, type=None):
     return type(value) if type is not None else value
 
 
-SECRET_KEY = env('SECRET')
+with open('secret', 'r') as f:
+    SECRET_KEY = f.read()
 
 # Application definition
 
