@@ -1,0 +1,42 @@
+version: '2.2'
+
+volumes:
+  pgdata:
+    driver: local
+
+services:
+  postgres:
+    image: postgres
+    restart: always
+    volumes:
+     - pgdata:/var/lib/postgresql
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: tlabel
+
+  backend:
+    volumes:
+     - <path to dataset>:/src/datasets/image/mydataset
+    build: tlabel
+    image: tlabel
+    restart: always
+    environment:
+      - DB=postgres
+    command: bash -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    ports:
+      - 8080:8000
+    depends_on:
+      - postgres
+
+  dealer_bot:
+    volumes:
+     - <path to dataset>:/src/datasets/image/mydataset
+    image: tlabel
+    restart: always
+    environment:
+     - DB=postgres
+    command: bash -c "python manage.py migrate &&
+                                python manage.py start_bot"
+    depends_on:
+     - postgres
